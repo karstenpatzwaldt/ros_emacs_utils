@@ -185,7 +185,7 @@
   (with-temp-buffer
     (let ((l nil))
       (message "Calling rosstack")
-      (call-process "rosstack" nil t nil "list")
+      (process-file "rosstack" nil t nil "list")
       (goto-char (point-min))
       (message "Parsing rosstack output")
       (let ((done nil))
@@ -215,8 +215,8 @@
   (with-temp-buffer
     (let ((l nil))
       (message "Calling rospack")
-      (call-process "rospack" nil t nil "list")
       (goto-char (point-min)) 
+      (process-file "rospack" nil t nil "list")
       (message "Parsing rospack output")
       (let ((done nil))
         ;; Loop over lines; each line contains a package and directory
@@ -249,7 +249,7 @@
     (let ((l nil)
           (done nil)
           (p nil))
-      (call-process "ls" nil t nil (concat dir "/" (or subdir ext) "/"))
+      (process-file "ls" nil t nil (concat dir "/" (or subdir ext) "/"))
       (goto-char (point-min))
       (while (not done)
         (setq p (point))
@@ -827,7 +827,7 @@ parameter."
   (interactive)
   (if (get-buffer "*roscore*")
       (switch-to-buffer (get-buffer "*roscore*"))
-    (progn (start-process "roscore" (get-buffer-create "*roscore*") "roscore")
+    (progn (start-file-process "roscore" (get-buffer-create "*roscore*") "roscore")
            (message "roscore started"))))
 
 (defun ros-set-master-uri (host port)
@@ -888,7 +888,7 @@ parameter."
         (delete-process old-proc))
       (when (> interval 0)
         (let ((proc
-               (start-process name name
+               (start-file-process name name
                               (concat rosemacs/pathname "poll-rosnode")
                               (format "%s" interval))))
           (set-process-query-on-exit-flag proc nil)
@@ -950,7 +950,7 @@ parameter."
         (delete-process old-proc)))
     (when (> interval 0)
       (let ((proc
-             (start-process name name
+             (start-file-process name name
                             (concat rosemacs/pathname "poll-rostopic")
                             (format "%s" interval))))
         (set-process-query-on-exit-flag proc nil)
@@ -995,7 +995,7 @@ parameter."
                         word))))
   (let* ((topic-full-name (if (string-match "^/" topic) topic (concat "/" topic)))
          (buffer-name (concat "*rostopic:" topic-full-name "*"))
-         (process (start-process buffer-name buffer-name "rostopic" "echo" topic-full-name)))
+         (process (start-file-process buffer-name buffer-name "rostopic" "echo" topic-full-name)))
     (view-buffer-other-window (process-buffer process))
     (ros-topic-echo-mode 1)))
 
@@ -1012,7 +1012,7 @@ parameter."
       (let ((buffer-read-only nil))
         (erase-buffer)))
     (view-buffer-other-window buf)
-    (call-process "rostopic" nil buf t "info" topic-full-name)))
+    (process-file "rostopic" nil buf t "info" topic-full-name)))
 
 
 (defun rosemacs/interrupt-process ()
@@ -1234,7 +1234,7 @@ else if not published yet, return the number -1, else return nil"
 
 (defun start-hz-tracker (topic)
   (let* ((name (concat "rostopic-hz-" topic))
-         (proc (start-process name name "rostopic" "hz" topic)))
+         (proc (start-file-process name name "rostopic" "hz" topic)))
     (push (list topic) ros-topic-last-hz-rate)
     (push (list topic) ros-topic-publication-rates)
     (let ((old-proc-pair (assoc topic ros-topic-hertz-processes)))
@@ -1375,7 +1375,7 @@ else if not published yet, return the number -1, else return nil"
   (let ((path (ros-package-path pkg)))
     (save-excursion
       (with-temp-buffer
-        (call-process "find" nil t nil path "-name" "*.launch")
+        (process-file "find" nil t nil path "-name" "*.launch")
         (let ((launch-files-with-path (split-string (buffer-string) "\n" t)))
           (mapcar 'file-name-nondirectory launch-files-with-path))))))
 
@@ -1384,8 +1384,8 @@ else if not published yet, return the number -1, else return nil"
         (paths (list (ros-package-path pkg) (catkin-path pkg))))
     (dolist (path paths)
     (save-excursion
-      (with-temp-buffer 
-        (call-process "find" nil t nil path "-perm" "-111" "!" "-type" "d")
+      (with-temp-buffer
+        (process-file "find" nil t nil path "-perm" "-111" "!" "-type" "d")
         (goto-char (point-min))
         (cl-loop
          (let ((pos (re-search-forward "^\\(.+\\)$" (point-max) t)))
@@ -1399,13 +1399,13 @@ else if not published yet, return the number -1, else return nil"
   (let ((path (ros-package-path pkg)))
     (save-excursion
       (with-temp-buffer
-        (call-process "find" nil t nil path "-name" file)
+        (process-file "find" nil t nil path "-name" file)
         (car (split-string (buffer-string) "\n"))))))
 
 (defun ros-package-path (pkg)
   (save-excursion
     (with-temp-buffer
-      (call-process "rospack" nil t nil "find" pkg)
+      (process-file "rospack" nil t nil "find" pkg)
       (goto-char (point-min))
       (re-search-forward "^\\(.*\\)$")
       (match-string 1))))
@@ -1413,7 +1413,7 @@ else if not published yet, return the number -1, else return nil"
 (defun catkin-path (pkg)
   (save-excursion
     (with-temp-buffer
-      (call-process "catkin_find" nil t nil "--libexec" pkg)
+      (process-file "catkin_find" nil t nil "--libexec" pkg)
       (goto-char (point-min))
       (re-search-forward "^\\(.*\\)$")
       (match-string 1))))
@@ -1488,8 +1488,8 @@ Prefix argument allows you to edit the rosrun command before executing it."
       (save-excursion
         (set-buffer buf)
         (ros-run-mode 1)
-        (let ((proc 
-               (apply 'start-process (buffer-name buf) buf "rosrun"
+        (let ((proc
+               (apply 'start-file-process (buffer-name buf) buf "rosrun"
                       ros-run-pkg ros-run-executable ros-run-args)))
           (set-process-filter proc 'comint-output-filter)))
       (switch-to-buffer buf))))
@@ -1667,7 +1667,7 @@ set.  These variables contain all the information needed to actually do the laun
         (set-buffer buf)
         (erase-buffer)
         (let ((proc
-               (apply 'start-process
+               (apply 'start-file-process
                       (buffer-name buf) buf ros-launch-cmd ros-launch-args)))
           (set-process-filter proc 'comint-output-filter))
         (rosemacs/add-event (format "Ros launch of %s" ros-launch-path))))))
