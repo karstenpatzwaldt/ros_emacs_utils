@@ -35,19 +35,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Installation instructions
-;; 1. Put this file somewhere (if it's not already in 
+;; 1. Put this file somewhere (if it's not already in
 ;;    tools/rosemacs in your ros tree)
 ;;
-;; 2. (Optional) From emacs do M-x byte-compile followed by 
-;;    this file's full path 
+;; 2. (Optional) From emacs do M-x byte-compile followed by
+;;    this file's full path
 ;;
 ;; 3. Add the following lines to your .emacs
 ;;    (add-to-list 'load-path "/path/to/rosemacs")
 ;;    (require 'rosemacs)
 ;;    (invoke-rosemacs)
 ;;
-;; 4. Add the following line or equivalent to 
-;;    .emacs to activate keyboard shortcuts for the added 
+;; 4. Add the following line or equivalent to
+;;    .emacs to activate keyboard shortcuts for the added
 ;;    commands (\C-x\C-r means control-x control-r):
 ;;    (global-set-key "\C-x\C-r" ros-keymap)
 ;;
@@ -56,7 +56,7 @@
 ;;    ROS installation instructions about sourcing setup.bash
 ;;    in your .bashrc, then this will automatically happen
 ;;    if you launch emacs from a bash shell.
-;; 
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -66,26 +66,26 @@
 ;; 0. If you did 4 above, you can type the prefix followed
 ;;    by \C-h to see the list of added commands.
 ;;
-;; 1. Directory tracking and tab completion for rosbash 
+;; 1. Directory tracking and tab completion for rosbash
 ;;    commands, including rostopic and rosnode, should now
 ;;    work correctly in shell mode
 ;;
-;; 2. The commands {find|view}-ros-{file|message|service}, 
+;; 2. The commands {find|view}-ros-{file|message|service},
 ;;    and view-most-recent-ros-log for navigating the ros
-;;    libraries are available.  Tab completion should work 
+;;    libraries are available.  Tab completion should work
 ;;    for all of them.
 ;;
 ;; 3. The customization option ros-topic-update-interval governs
 ;;    how frequently rosemacs polls the list of ros topics
-;;    and nodes.  Assuming this is positive, it will enable tab 
+;;    and nodes.  Assuming this is positive, it will enable tab
 ;;    completion of ros topics in the shell and for commands
-;;    such as echo-ros-topic.  Additionally, you can use 
-;;    add-hz-update to define a list of topics for which the 
-;;    hz rate is tracked in the background, viewable using 
+;;    such as echo-ros-topic.  Additionally, you can use
+;;    add-hz-update to define a list of topics for which the
+;;    hz rate is tracked in the background, viewable using
 ;;    display-ros-topic-info.
 ;;
 ;; 4. Similarly, set ros-node-update-interval to set up
-;;    tracking and completion of nodes.  
+;;    tracking and completion of nodes.
 ;;
 ;; 5. ros-core starts a core.  ros-run runs a node.  In
 ;;    either case, an appropriately named buffer is created
@@ -215,8 +215,8 @@
   (with-temp-buffer
     (let ((l nil))
       (message "Calling rospack")
-      (goto-char (point-min)) 
       (process-file "rospack" nil t nil "list")
+      (goto-char (point-min))
       (message "Parsing rospack output")
       (let ((done nil))
         ;; Loop over lines; each line contains a package and directory
@@ -396,10 +396,10 @@
                        (lambda (str) (rosemacs-bsearch str ros-all-topics))))
 (setq node-completor (dynamic-completion-table
                       (lambda (str) (rosemacs-bsearch str rosemacs/nodes-vec))))
-(setq ros-package-completor 
+(setq ros-package-completor
       ;; Longer because it has to deal with the case of PACKAGE/PATH-PREFIX in addition to PACKAGE-PREFIX
-      (dynamic-completion-table 
-       (lambda (str) 
+      (dynamic-completion-table
+       (lambda (str)
          (unless ros-packages (ros-load-package-locations))
          (cl-multiple-value-bind (package dir-prefix dir-suffix) (parse-ros-file-prefix str)
            (if dir-prefix
@@ -415,7 +415,7 @@
   ;; Like the above, except in the shell
   (unless ros-packages (ros-load-package-locations))
   (let ((prefix (comint-get-ros-package-prefix)))
-    (when prefix 
+    (when prefix
       (cl-multiple-value-bind (package dir-prefix dir-suffix) (parse-ros-file-prefix prefix)
         (if dir-prefix
             (let ((dir (concat (ros-package-dir package) dir-prefix)))
@@ -1038,8 +1038,8 @@ parameter."
 (define-key ros-topic-echo-keymap "k" 'rosemacs/terminate-process)
 (define-key ros-topic-echo-keymap "q" 'rosemacs/kill-process-buffer)
 
-(define-minor-mode ros-topic-echo-mode 
-  "Mode used for rostopic echo.  
+(define-minor-mode ros-topic-echo-mode
+  "Mode used for rostopic echo.
 
 k kills the process (sends SIGINT).
 q kills the buffer and process"
@@ -1178,7 +1178,7 @@ q kills buffer"
 (defun remove-ros-topic (topic)
   "Remove this topic and all associated entries from topic list, completion list, hertz processes, publication rates"
   (lwarn '(rosemacs) :debug "removing ros topic %s" topic)
-  (stop-hz-tracker topic) 
+  (stop-hz-tracker topic)
   (setq ros-topics (delete topic ros-topics)))
 
 
@@ -1213,7 +1213,7 @@ update the entry for the corresponding topic's publication rate"
     (if pair
         (let ((hz (ros-topic-extract-hz string))
               (topic (car pair)))
-          (cond 
+          (cond
            ((eql hz 'not-published) (remove-ros-topic topic))
            (hz (set-ros-topic-hz topic hz))))
       (lwarn '(rosemacs) :warning "Unexpectedly could not find topic corresponding to process %s" (process-name proc)))))
@@ -1272,7 +1272,7 @@ else if not published yet, return the number -1, else return nil"
   ;; Might be simpler to just call shell-resync-dirs at some point
 
   ;; skip whitespace
-  (let ((start (progn (string-match 
+  (let ((start (progn (string-match
                        (concat "^" shell-command-separator-regexp) str)
                       (match-end 0)))
         end cmd arg1)
@@ -1282,7 +1282,7 @@ else if not published yet, return the number -1, else return nil"
             cmd (comint-arguments (substring str start end) 0 0)
             arg1 (comint-arguments (substring str start end) 1 1))
       (when arg1 (setq arg1 (shell-unquote-argument arg1)))
-      
+
       (cond ((string-match "^ros[cp]d\\([[:space:]]\\|$\\)" cmd)
              (if (string-match "\\([^/]*\\)/\\(.*\\)" arg1)
                  (let ((package (match-string 1 arg1))
@@ -1572,20 +1572,20 @@ With prefix arg, allows editing rosmake command before starting."
           (roslaunch/launchfile-history-list
            (gethash pkg roslaunch/launchfile-history-lists nil))
           )
-     
+
      (list pkg
            ;; Read launch file within this package, with completion
            ;; Because of the way history lists work, we have to do this
            ;; weird thing to save the updated list back out for next time
            (prog1
                (funcall ros-completion-function "Enter launch file: "
-                        (ros-find-launch-files pkg) nil nil nil 
+                        (ros-find-launch-files pkg) nil nil nil
                         'roslaunch/launchfile-history-list nil)
              (puthash pkg roslaunch/launchfile-history-list
                       roslaunch/launchfile-history-lists))
 
            ;; No other-window, and edit-command is t iff prefix given
-           nil current-prefix-arg))) 
+           nil current-prefix-arg)))
 
   ;; Buffer name for this launch
   (let ((name (format "roslaunch:%s/%s" package-name launch-file)))
@@ -1618,7 +1618,7 @@ With prefix arg, allows editing rosmake command before starting."
 
             ;; Actually do the launch
             (rosemacs/relaunch (current-buffer)))
-          
+
           (if other-window (display-buffer buf) (switch-to-buffer buf))
           buf)))))
 
@@ -1656,7 +1656,7 @@ With prefix arg, allows editing rosmake command before starting."
   (find-file ros-launch-path))
 
 (defun rosemacs/relaunch (buf)
-  "Common function used by the various roslaunch functions.  
+  "Common function used by the various roslaunch functions.
 
 It assumes BUF is an existing buffer in which a bunch of buffer-local variables have already been
 set.  These variables contain all the information needed to actually do the launch."
@@ -1795,7 +1795,7 @@ The page delimiter in this buffer matches the start, so you can use forward/back
   (add-to-list 'auto-mode-alist '("\\.xacro" . xml-mode))
 
   ;; rosbag view mode
-  (add-to-list 'auto-mode-alist '("\.bag$" . rosbag-view-mode))  
+  (add-to-list 'auto-mode-alist '("\.bag$" . rosbag-view-mode))
 
   ;; msg and srv files: for now use gdb-script-mode
   (add-to-list 'auto-mode-alist '("\\.msg\\'" . gdb-script-mode))
@@ -1831,7 +1831,7 @@ Return list of strings in completions that str is a prefix of."
         (when (not (rosemacs-is-prefix str (rosemacs-get-comp completions i)))
           (cl-incf i))
         ;; Postcondition: completions of str, if they exist, begin at i
-        
+
         (let ((returned-completions nil))
           (while (and (< i (length completions))
                       (rosemacs-is-prefix str (rosemacs-get-comp completions i)))
@@ -1846,7 +1846,7 @@ Return list of strings in completions that str is a prefix of."
 (defun rosemacs-lookup-vectors (str v1 v2)
   (let ((i (cl-position str v1 :test #'string-equal)))
     (when i
-      (aref v2 i)))) 
+      (aref v2 i))))
 
 (defun rosemacs-list-diffs (l1 l2)
   "Given two sorted lists of strings, return a list with 1) l2 - l1 2) l1 - l2"
